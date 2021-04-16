@@ -23,6 +23,7 @@ contract Protocol is ERC721Holder {
         uint256 availableShares;
         uint256 totalShares;
         address owner;
+        bool dissolved;
         mapping(address => uint256) shares;
     }
 
@@ -36,6 +37,11 @@ contract Protocol is ERC721Holder {
         game = _game;
         gotchis = _gotchis;
         ghst = _ghst;
+    }
+
+    modifier onlyGotchiOwner(uint256 gotchiId) {
+        require(msg.sender == communityGotchis[gotchiId].owner);
+        _;
     }
 
     function startCommunityGotchi(
@@ -58,6 +64,7 @@ contract Protocol is ERC721Holder {
         Gotchi storage _gotchi = communityGotchis[gotchiId];
 
         require(_gotchi.availableShares > sharesToBuy, "!SHARES");
+        require(!_gotchi.dissolved, "DISSOLVED");
 
         ghst.safeTransferFrom(
             msg.sender,
@@ -69,5 +76,21 @@ contract Protocol is ERC721Holder {
         _gotchi.shares[msg.sender] = _gotchi.shares[msg.sender].add(
             sharesToBuy
         );
+    }
+
+    function disolveCommunity(uint256 gotchiId)
+        external
+        onlyGotchiOwner(gotchiId)
+    {
+        communityGotchis[gotchiId].dissolved = true;
+    }
+
+    function claimShares(uint256 gotchiId) external {
+        Gotchi storage _gotchi = communityGotchis[gotchiId];
+        require(_gotchi.dissolved, "!DISSOLVED");
+
+        uint256 shares = _gotchi.shares[msg.sender];
+
+        ghst.safeTransfer(msg.sender, shares);
     }
 }
