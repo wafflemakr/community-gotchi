@@ -1,23 +1,70 @@
 //SPDX-License-Identifier: MIT
 pragma solidity 0.8.1;
 
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "./interfaces/IAavegotchi.sol";
+
 import "hardhat/console.sol";
 
-contract Greeter {
-  string greeting;
+contract Protocol {
+    using SafeMath for uint256;
+    using SafeERC20 for IERC20;
 
-  constructor(string memory _greeting) {
-    greeting = _greeting;
-  }
+    IAavegotchi game;
+    IERC721 gotchis;
+    IERC20 ghst;
 
-  function greet() public view returns (string memory) {
-    return greeting;
-  }
+    struct Gotchi {
+        uint256 pricePerShare;
+        uint256 availableShares;
+        address owner;
+        mapping(address => uint256) shares;
+    }
 
-  function setGreeting(string memory _greeting) public {
-    // Hardhat Console Log
-    console.log("Setting Greeting to:", _greeting);
+    mapping(uint256 => Gotchi) communityGotchis;
 
-    greeting = _greeting;
-  }
+    constructor(
+        IAavegotchi _game,
+        IERC721 _gotchis,
+        IERC20 _ghst
+    ) {
+        game = _game;
+        gotchis = _gotchis;
+        ghst = _ghst;
+    }
+
+    function startCommunityGotchi(
+        uint256 gotchiId,
+        uint256 pricePerShare,
+        uint256 totalShares
+    ) external {
+        require(communityGotchis[gotchiId].owner == address(0), "EXISTS");
+
+        gotchis.safeTransferFrom(msg.sender, address(this), gotchiId);
+
+        Gotchi storage _gotchi = communityGotchis[gotchiId];
+        _gotchi.pricePerShare = pricePerShare;
+        _gotchi.availableShares = totalShares;
+        _gotchi.owner = msg.sender;
+    }
+
+    function joinCommunity(uint256 gotchiId, uint256 sharesToBuy) external {
+        Gotchi storage _gotchi = communityGotchis[gotchiId];
+
+        require(_gotchi.availableShares > sharesToBuy, "!SHARES");
+
+        ghst.safeTransferFrom(
+            msg.sender,
+            address(this),
+            _gotchi.availableShares.mul(_gotchi.pricePerShare)
+        );
+
+        _gotchi.availableShares = _gotchi.availableShares.sub(sharesToBuy);
+        _gotchi.shares[msg.sender] = _gotchi.shares[msg.sender].add(
+            sharesToBuy
+        );
+    }
 }
