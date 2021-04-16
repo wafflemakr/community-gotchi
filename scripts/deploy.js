@@ -1,12 +1,12 @@
-const Greeter = artifacts.require("Greeter");
+const Protocol = artifacts.require("Greeter");
 
 async function main() {
-  const greeter = await Greeter.new("Hello, Hardhat!");
-  Greeter.setAsDeployed(greeter);
+  const protocol = await Protocol.new("Hello, Hardhat!");
+  Protocol.setAsDeployed(protocol);
 
-  console.log("Greeter deployed to:", greeter.address);
+  console.log("Protocol deployed to:", protocol.address);
 
-  const greeting = await greeter.greet();
+  const greeting = await protocol.greet();
   console.log("Current Greeting:", greeting);
 }
 

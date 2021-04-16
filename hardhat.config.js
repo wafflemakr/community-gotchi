@@ -3,29 +3,28 @@
  */
 
 require("dotenv").config();
-require("@nomiclabs/hardhat-truffle5");
-require("@nomiclabs/hardhat-etherscan");
 require("@nomiclabs/hardhat-web3");
+require("@nomiclabs/hardhat-truffle5");
 
 module.exports = {
   networks: {
     hardhat: {
-      // Uncomment these lines to use mainnet fork
       forking: {
-        url: `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_KEY}`,
-        blockNumber: 11589707,
+        url: "https://rpc-mainnet.maticvigil.com/",
+        blockNumber: 12e6,
       },
     },
-    live: {
-      url: `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_KEY}`,
-      accounts: [process.env.MAINNET_PRIVKEY],
+    testnet: {
+      url: "https://rpc-mumbai.maticvigil.com/",
+      accounts: [process.env.TESTNET_PRIVATE_KEY],
+    },
+    mainnet: {
+      url: "https://rpc-mainnet.maticvigil.com/",
+      accounts: [process.env.MAINNET_PRIVATE_KEY],
     },
   },
-  etherscan: {
-    apiKey: process.env.ETHERSCAN_API,
-  },
   solidity: {
-    version: "0.7.6",
+    version: "0.8.1",
     settings: {
       optimizer: {
         enabled: true,
