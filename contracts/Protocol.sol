@@ -6,10 +6,11 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./interfaces/IAavegotchi.sol";
+import "./ERC721Holder.sol";
 
 import "hardhat/console.sol";
 
-contract Protocol {
+contract Protocol is ERC721Holder {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
@@ -20,6 +21,7 @@ contract Protocol {
     struct Gotchi {
         uint256 pricePerShare;
         uint256 availableShares;
+        uint256 totalShares;
         address owner;
         mapping(address => uint256) shares;
     }
@@ -48,6 +50,7 @@ contract Protocol {
         Gotchi storage _gotchi = communityGotchis[gotchiId];
         _gotchi.pricePerShare = pricePerShare;
         _gotchi.availableShares = totalShares;
+        _gotchi.totalShares = totalShares;
         _gotchi.owner = msg.sender;
     }
 
